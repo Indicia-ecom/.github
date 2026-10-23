@@ -105,6 +105,6 @@ jobs:
     if: vars.LIVE_URL != ''
     permissions:
       contents: read
-    uses: Indicia-ecom/.github/.github/workflows/nuclei.yml@f65c8935d8f030ca18183e653a1e3cac31178d11 # main
+    uses: Indicia-ecom/.github/.github/workflows/nuclei.yml@f65c8935d8f030ca18183e653a1e3cac31178d11 # v1.0.0
     with:
       url: ${{ vars.LIVE_URL }}
