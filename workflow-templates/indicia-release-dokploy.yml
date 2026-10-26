@@ -8,7 +8,9 @@ name: Release
 # Repo setup:
 #   - environments `acceptance` and `production`, deployment policy "selected branches and tags",
 #     tags only (acceptance: `*-rc*`, production: `[0-9]*`)
-#   - per environment: secret DOKPLOY_WEBHOOK_URL, variable LIVE_URL (e.g. https://app.test.indicia-ai.com)
+#   - per environment: secret DOKPLOY_WEBHOOK_URL (one app) or DOKPLOY_WEBHOOK_URLS (several apps,
+#     one URL per line, fired in order; any failure fails the job; takes precedence over the singular),
+#     variable LIVE_URL (e.g. https://app.test.indicia-ai.com)
 #   - Dokploy apps: acc on the test VPS pulling :acc, prod on the prod VPS pulling :latest
 #   - org custom property `deploy_target` (prod-vps, test-vps, mac-mini, none)
 on:
@@ -106,12 +108,22 @@ jobs:
     outputs:
       live_url: ${{ steps.live.outputs.url }}
     steps:
-      - name: Dokploy webhook
+      - name: Dokploy webhooks
         env:
-          WEBHOOK: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+          WEBHOOK_URLS: ${{ secrets.DOKPLOY_WEBHOOK_URLS }}
+          WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
         run: |
-          [ -n "$WEBHOOK" ] || { echo "::error::DOKPLOY_WEBHOOK_URL is not set in this environment"; exit 1; }
-          curl -fsS --retry 3 --retry-delay 5 -X POST "$WEBHOOK" -o /dev/null
+          urls="${WEBHOOK_URLS:-$WEBHOOK_URL}"
+          [ -n "$urls" ] || { echo "::error::Neither DOKPLOY_WEBHOOK_URLS nor DOKPLOY_WEBHOOK_URL is set in this environment"; exit 1; }
+          n=0
+          while IFS= read -r url || [ -n "$url" ]; do
+            url="$(printf '%s' "$url" | tr -d '[:space:]')"
+            [ -n "$url" ] || continue
+            n=$((n + 1))
+            echo "Webhook $n"
+            curl -fsS --retry 3 --retry-delay 5 -X POST "$url" -o /dev/null || { echo "::error::Webhook $n failed"; exit 1; }
+          done <<< "$urls"
+          [ "$n" -gt 0 ] || { echo "::error::No webhook URL found"; exit 1; }
       # A reusable-workflow job cannot use an environment, so hand the environment's LIVE_URL on.
       - id: live
         env:
