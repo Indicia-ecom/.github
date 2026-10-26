@@ -136,6 +136,6 @@ jobs:
     if: needs.deploy.outputs.live_url != ''
     permissions:
       contents: read
-    uses: Indicia-ecom/.github/.github/workflows/nuclei.yml@d35d64f7b101caa002c0bbdf2c21eebfbd3d3247 # v1.0.1
+    uses: Indicia-ecom/.github/.github/workflows/nuclei.yml@77d7c56195ff15a8b7adb47e006d17bbbb5efd6f # v1.0.2
     with:
       url: ${{ needs.deploy.outputs.live_url }}
