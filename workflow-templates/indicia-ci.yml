@@ -19,7 +19,7 @@ jobs:
   ci:
     permissions:
       contents: read
-    uses: Indicia-ecom/.github/.github/workflows/ci-node.yml@6cad483a913d68f56ec79fa36cefbc25d18c35c7 # v1.2.0
+    uses: Indicia-ecom/.github/.github/workflows/ci-node.yml@08671b3ff081de9c0a6546010a082a4f43e64d39 # v1.3.1
     # with:
     #   node-version: "24.22.1"        # or keep the default node-version-file: .node-version
     #   package-manager: pnpm          # npm (default), pnpm, bun
